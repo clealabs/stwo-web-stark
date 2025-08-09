@@ -17,11 +17,13 @@ use cairo_vm::{
 };
 use serde::{Deserialize, Serialize};
 use stwo_cairo_adapter::{vm_import::VmImportError, ProverInput};
-use stwo_cairo_prover::prover::prove_cairo;
-use stwo_prover::core::{
-    pcs::PcsConfig,
-    prover::ProvingError,
-    vcs::blake2_merkle::{Blake2sMerkleChannel, Blake2sMerkleHasher},
+use stwo_cairo_prover::{
+    prover::prove_cairo,
+    stwo_prover::core::{
+        pcs::PcsConfig,
+        prover::ProvingError,
+        vcs::blake2_merkle::{Blake2sMerkleChannel, Blake2sMerkleHasher},
+    },
 };
 use thiserror_no_std::Error;
 use utils::{adapt_finished_runner, set_panic_hook};
@@ -34,7 +36,8 @@ use lol_alloc::{FreeListAllocator, LockedAllocator};
 
 #[cfg(target_arch = "wasm32")]
 #[global_allocator]
-static ALLOCATOR: LockedAllocator<FreeListAllocator> = LockedAllocator::new(FreeListAllocator::new());
+static ALLOCATOR: LockedAllocator<FreeListAllocator> =
+    LockedAllocator::new(FreeListAllocator::new());
 
 pub struct TraceGenOutput {
     pub execution_resources: ExecutionResources,
