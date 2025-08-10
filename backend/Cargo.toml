@@ -6,6 +6,7 @@ edition = "2018"
 
 [patch.crates-io]
 sonic-rs = { git = "https://github.com/clealabs/sonic-rs", branch = "fix-wasm" }
+# cairo-vm = { git = "https://github.com/lambdaclass/cairo-vm", rev = "b1a91f929b5fa29a1a2e9e6990a68a1220c0c673", features = ["mod_builtin"], default-features = false}
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -14,11 +15,11 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
+# getrandom = { version = "0.3", features = ["wasm_js"] }
+cairo-lang-casm = { git = "https://github.com/starkware-libs/cairo.git", rev = "5cc466a", features = ["serde"] }
 bytemuck = { version = "1.20.0", features = ["derive"] }
-cairo-air = { git = "https://github.com/starkware-libs/stwo-cairo", rev = "62c3c4a" }
-# cairo-vm = { git = "https://github.com/lambdaclass/cairo-vm", rev = "b1a91f929b5fa29a1a2e9e6990a68a1220c0c673", features = [
-#     "mod_builtin",
-# ] }
+cairo-air = { git = "https://github.com/clealabs/stwo-cairo", branch = "fix-wasm" }
+cairo-vm = { git = "https://github.com/lambdaclass/cairo-vm", rev = "b1a91f929b5fa29a1a2e9e6990a68a1220c0c673", features = ["mod_builtin"], default-features = false}
 hex = "0.4.3"
 itertools = "0.12.0"
 lol_alloc = "0.4.1"
@@ -26,12 +27,12 @@ serde = "1.0.134"
 serde_json = "1.0.134"
 serde-wasm-bindgen = "0.6.5"
 stwo_cairo_prover = { git = "https://github.com/clealabs/stwo-cairo", branch = "fix-wasm" }
-# stwo-cairo-adapter = { git = "https://github.com/starkware-libs/stwo-cairo", rev = "62c3c4a", features = [
-#     "std",
-# ] }
+stwo-cairo-adapter = { git = "https://github.com/clealabs/stwo-cairo", branch = "fix-wasm", default-features = false }
 thiserror-no-std = "2.0.2"
 wasm-bindgen = "0.2.100"
 zip = { version = "2.2.2", features = ["deflate"], default-features = false}
+# cairo-prove = { git = "https://github.com/starkware-libs/stwo-cairo", rev = "335de15"}
+# cairo-prove = { git = "https://github.com/clealabs/stwo-cairo", rev = "73b578a"}
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires

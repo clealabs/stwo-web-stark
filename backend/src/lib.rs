@@ -1,6 +1,7 @@
-mod utils;
+pub mod utils;
 
-use cairo_air::{air::CairoProof, verifier::verify_cairo, PreProcessedTraceVariant};
+// use cairo_air::{air::CairoProof, verifier::verify_cairo, PreProcessedTraceVariant};
+// // use cairo_prove::prove::{prove as cairo_prove_prove, prover_input_from_runner};
 // use cairo_vm::{
 //     cairo_run::{self},
 //     hint_processor::builtin_hint_processor::builtin_hint_processor_definition::BuiltinHintProcessor,
@@ -10,25 +11,55 @@ use cairo_air::{air::CairoProof, verifier::verify_cairo, PreProcessedTraceVarian
 //         // runners::{
 //         //     cairo_pie::{
 //         //         CairoPie, CairoPieAdditionalData, CairoPieMemory, CairoPieMetadata,
-// CairoPieVersion,         //     },
+//         //         CairoPieVersion, /*     },
 //         //     cairo_runner::{ExecutionResources, RunResources},
-//         // },
+//         // }, */
 //     },
 // };
-// use serde::{Deserialize, Serialize};
-// use stwo_cairo_adapter::{vm_import::VmImportError, ProverInput};
+// // use serde::{Deserialize, Serialize};
+// // use stwo_cairo_adapter::{vm_import::VmImportError, ProverInput};
+// use stwo_cairo_prover::stwo_prover::core::{
+//     fri::FriConfig,
+//     pcs::PcsConfig,
+//     vcs::blake2_merkle::{Blake2sMerkleChannel, Blake2sMerkleHasher},
+// };
+// use thiserror_no_std::Error;
+// // use utils::{adapt_finished_runner, set_panic_hook};
+// // use wasm_bindgen::prelude::*;
+
+// use stwo_cairo_prover::{
+//     cairo_air::{air::CairoProof, prove_cairo, verify_cairo, ProverConfig},
+//     input::{plain::adapt_finished_runner, ProverInput},
+// };
+use cairo_air::{air::CairoProof, verifier::verify_cairo, PreProcessedTraceVariant};
+// use cairo_lang_executable::executable::{EntryPointKind, Executable};
+// use cairo_lang_runner::{build_hints_dict, Arg, CairoHintProcessor};
+use cairo_vm::{
+    cairo_run,
+    hint_processor::builtin_hint_processor::builtin_hint_processor_definition::BuiltinHintProcessor,
+    types::{layout_name::LayoutName, program::Program},
+    vm::{errors::cairo_run_errors::CairoRunError, runners::cairo_runner::ExecutionResources},
+};
+use serde::{Deserialize, Serialize};
+use stwo_cairo_adapter::{adapter::adapter, vm_import::VmImportError, ProverInput};
+// use stwo_cairo_utils::vm_utils::VmError;
+use stwo_cairo_prover::{prover::prove_cairo, stwo_prover::core::prover::ProvingError};
 use stwo_cairo_prover::{
-    // prover::prove_cairo,
+    // prover::default_prod_prover_parameters,
     stwo_prover::core::{
+        fri::FriConfig,
         pcs::PcsConfig,
-        // prover::ProvingError,
         vcs::blake2_merkle::{Blake2sMerkleChannel, Blake2sMerkleHasher},
     },
 };
+// use utils::set_panic_hook;
 use thiserror_no_std::Error;
-// use utils::{adapt_finished_runner, set_panic_hook};
-// use wasm_bindgen::prelude::*;
+use wasm_bindgen::prelude::*;
 
+use crate::utils::set_panic_hook;
+
+///////////////////
+///
 // extern crate alloc;
 
 // #[cfg(target_arch = "wasm32")]
@@ -38,6 +69,8 @@ use thiserror_no_std::Error;
 // #[global_allocator]
 // static ALLOCATOR: LockedAllocator<FreeListAllocator> =
 //     LockedAllocator::new(FreeListAllocator::new());
+
+///////////////////////
 
 // pub struct TraceGenOutput {
 //     pub execution_resources: ExecutionResources,
@@ -170,10 +203,232 @@ use thiserror_no_std::Error;
 //     )
 // }
 
+/////////////////////////
+///
+// // https://github.com/starkware-libs/cairo/blob/5cc466a6c7ca3e78a053e58911d567c2889444d2/crates/cairo-lang-runner/src/lib.rs#L148
+// /// Builds hints_dict required in cairo_vm::types::program::Program from instructions.
+// pub fn build_hints_dict(
+//     hints: &[(usize, Vec<Hint>)],
+// ) -> (HashMap<usize, Vec<HintParams>>, HashMap<String, Hint>) {
+//     let mut hints_dict: HashMap<usize, Vec<HintParams>> = HashMap::new();
+//     let mut string_to_hint: HashMap<String, Hint> = HashMap::new();
+
+//     for (offset, offset_hints) in hints {
+//         // Register hint with string for the hint processor.
+//         for hint in offset_hints {
+//             string_to_hint.insert(hint.representing_string(), hint.clone());
+//         }
+//         // Add hint, associated with the instruction offset.
+//         hints_dict.insert(
+//             *offset,
+//             offset_hints.iter().map(hint_to_hint_params).collect(),
+//         );
+//     }
+//     (hints_dict, string_to_hint)
+// }
+
+fn secure_pcs_config() -> PcsConfig {
+    PcsConfig {
+        pow_bits: 26,
+        fri_config: FriConfig {
+            log_last_layer_degree_bound: 0,
+            log_blowup_factor: 1,
+            n_queries: 70,
+        },
+    }
+}
+
+// // pub fn prove(cairo_prove_prove: String) -> CairoProof<Blake2sMerkleHasher> {
+// //     let prover_input = prover_input_from_runner(executable_json);
+// //     prove::<Blake2sMerkleChannel>(
+// //         prover_input,
+// //         secure_pcs_config(),
+// //         PreProcessedTraceVariant::CanonicalWithoutPedersen,
+// //     )
+// // }
+
+// pub fn verify(cairo_proof: CairoProof<Blake2sMerkleHasher>) -> bool {
+//     verify_cairo::<Blake2sMerkleChannel>(
+//         cairo_proof,
+//         secure_pcs_config(),
+//         PreProcessedTraceVariant::CanonicalWithoutPedersen,
+//     )
+//     .is_ok()
+// }
+
+// #[derive(Debug, Error)]
+// pub enum VmError {
+//     #[error("Failed to interact with the file system")]
+//     IO(#[from] std::io::Error),
+//     // #[error("The cairo program execution failed")]
+//     // Runner(#[from] CairoRunError),
+//     // #[error("The adapter execution failed")]
+//     // Adapter(#[from] VmImportError),
+// }
+
+///////////////////////////
+///
+pub struct TraceGenOutput {
+    pub execution_resources: ExecutionResources,
+    pub prover_input: ProverInput,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TraceGenOutputJS {
+    execution_resources: String,
+    prover_input: String,
+}
+
+/// #[wasm_bindgen]
+/// pub fn run_trace_gen(program_content_js: JsValue) -> Result<JsValue, JsValue> {
+/// set_panic_hook();
+///
+/// let program = Program::from_bytes(
+/// serde_wasm_bindgen::from_value::<String>(program_content_js)?.as_bytes(),
+/// None,
+/// )
+/// .map_err(|e| JsValue::from(format!("Failed to deserialize program: {e}")))?;
+/// let trace_gen_output =
+/// trace_gen(program).map_err(|e| JsValue::from(format!("Failed to generate trace: {e}")))?;
+/// Ok(serde_wasm_bindgen::to_value(&TraceGenOutputJS {
+/// prover_input: serde_json::to_string(&trace_gen_output.prover_input)
+/// .map_err(|e| JsValue::from(format!("Failed to serialize prover input: {e}")))?,
+/// execution_resources: serde_json::to_string(&trace_gen_output.execution_resources)
+/// .map_err(|e| JsValue::from(format!("Failed to serialize execution resources: {e}")))?,
+/// })?)
+/// }
+///
+/// #[wasm_bindgen]
+/// pub fn run_prove(prover_input_js: JsValue) -> Result<JsValue, JsValue> {
+/// set_panic_hook();
+///
+/// let prover_input: ProverInput =
+/// serde_json::from_str(&serde_wasm_bindgen::from_value::<String>(prover_input_js)?)
+/// .map_err(|e| JsValue::from(format!("Failed to deserialize prover input: {e}")))?;
+/// let proof = prove(prover_input).map_err(|e| {
+/// JsValue::from(format!(
+/// "Failed to generate proof:
+/// {e}"
+/// ))
+/// })?;
+/// Ok(serde_wasm_bindgen::to_value(
+/// &serde_json::to_string(&proof)
+/// .map_err(|e| JsValue::from(format!("Failed to serialize proof: {e}")))?,
+/// )?)
+/// }
+///
+/// #[wasm_bindgen]
+/// pub fn run_verify(proof_js: JsValue) -> Result<JsValue, JsValue> {
+/// set_panic_hook();
+///
+/// let proof: CairoProof<Blake2sMerkleHasher> =
+/// serde_json::from_str(&serde_wasm_bindgen::from_value::<String>(proof_js)?)
+/// .map_err(|e| JsValue::from(format!("Failed to deserialize proof: {e}")))?;
+/// let verdict = verify(proof);
+/// Ok(serde_wasm_bindgen::to_value(&verdict)?)
+/// }
+///
+
+#[wasm_bindgen]
+pub fn run_trace_gen(program_content_js: JsValue) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let program = Program::from_bytes(
+        serde_wasm_bindgen::from_value::<String>(program_content_js)?.as_bytes(),
+        None,
+    )
+    .map_err(|e| JsValue::from(format!("Failed to deserialize program: {e}")))?;
+    let trace_gen_output =
+        trace_gen(program).map_err(|e| JsValue::from(format!("Failed to generate trace: {e}")))?;
+    Ok(serde_wasm_bindgen::to_value(&TraceGenOutputJS {
+        prover_input: serde_json::to_string(&trace_gen_output.prover_input)
+            .map_err(|e| JsValue::from(format!("Failed to serialize prover input: {e}")))?,
+        execution_resources: serde_json::to_string(&trace_gen_output.execution_resources)
+            .map_err(|e| JsValue::from(format!("Failed to serialize execution resources: {e}")))?,
+    })?)
+}
+
+#[wasm_bindgen]
+pub fn run_prove(prover_input_js: JsValue) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let prover_input: ProverInput =
+        serde_json::from_str(&serde_wasm_bindgen::from_value::<String>(prover_input_js)?)
+            .map_err(|e| JsValue::from(format!("Failed to deserialize prover input: {e}")))?;
+    let proof =
+        prove(prover_input).map_err(|e| JsValue::from(format!("Failed to generate proof: {e}")))?;
+    Ok(serde_wasm_bindgen::to_value(
+        &serde_json::to_string(&proof)
+            .map_err(|e| JsValue::from(format!("Failed to serialize proof: {e}")))?,
+    )?)
+}
+
+#[wasm_bindgen]
+pub fn run_verify(proof_js: JsValue) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let proof: CairoProof<Blake2sMerkleHasher> =
+        serde_json::from_str(&serde_wasm_bindgen::from_value::<String>(proof_js)?)
+            .map_err(|e| JsValue::from(format!("Failed to deserialize proof: {e}")))?;
+    let verdict = verify(proof);
+    Ok(serde_wasm_bindgen::to_value(&verdict)?)
+}
+
+pub fn trace_gen(program: Program) -> Result<TraceGenOutput, VmError> {
+    let cairo_run_config = cairo_run::CairoRunConfig {
+        trace_enabled: true,
+        relocate_mem: true,
+        layout: LayoutName::all_cairo,
+        proof_mode: true,
+        ..Default::default()
+    };
+
+    let mut hint_processor = BuiltinHintProcessor::new_empty();
+    let cairo_runner_result =
+        cairo_run::cairo_run_program(&program, &cairo_run_config, &mut hint_processor);
+
+    let cairo_runner = match cairo_runner_result {
+        Ok(runner) => runner,
+        Err(error) => {
+            return Err(VmError::Runner(error));
+        }
+    };
+
+    // Ok(TraceGenOutput {
+    //     execution_resources: cairo_runner
+    //         .get_execution_resources()
+    //         .map_err(|e| VmError::Runner(CairoRunError::Runner(e)))?,
+    //     prover_input: adapt_finished_runner(cairo_runner, false),
+    // })
+    Ok(TraceGenOutput {
+        execution_resources: cairo_runner
+            .get_execution_resources()
+            .map_err(|e| VmError::Runner(CairoRunError::Runner(e)))?,
+        prover_input: adapter(
+            &mut cairo_runner
+                .get_prover_input_info()
+                .expect("Failed to get prover input info from finished runner"),
+        )
+        .map_err(|e| VmError::Adapter(e))?,
+    })
+
+    // run_program_and_adapter(program)
+}
+
+pub fn prove(prover_input: ProverInput) -> Result<CairoProof<Blake2sMerkleHasher>, ProvingError> {
+    prove_cairo::<Blake2sMerkleChannel>(
+        prover_input,
+        secure_pcs_config(),
+        PreProcessedTraceVariant::CanonicalWithoutPedersen,
+        // default_prod_prover_parameters().pcs_config,
+        // default_prod_prover_parameters().preprocessed_trace,
+    )
+}
+
 pub fn verify(cairo_proof: CairoProof<Blake2sMerkleHasher>) -> bool {
     verify_cairo::<Blake2sMerkleChannel>(
         cairo_proof,
-        PcsConfig::default(),
+        secure_pcs_config(),
         PreProcessedTraceVariant::CanonicalWithoutPedersen,
     )
     .is_ok()
@@ -183,8 +438,8 @@ pub fn verify(cairo_proof: CairoProof<Blake2sMerkleHasher>) -> bool {
 pub enum VmError {
     #[error("Failed to interact with the file system")]
     IO(#[from] std::io::Error),
-    // #[error("The cairo program execution failed")]
-    // Runner(#[from] CairoRunError),
-    // #[error("The adapter execution failed")]
-    // Adapter(#[from] VmImportError),
+    #[error("The cairo program execution failed")]
+    Runner(#[from] CairoRunError),
+    #[error("The adapter execution failed")]
+    Adapter(#[from] VmImportError),
 }
