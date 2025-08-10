@@ -6,7 +6,6 @@ edition = "2018"
 
 [patch.crates-io]
 sonic-rs = { git = "https://github.com/clealabs/sonic-rs", branch = "fix-wasm" }
-# cairo-vm = { git = "https://github.com/lambdaclass/cairo-vm", rev = "b1a91f929b5fa29a1a2e9e6990a68a1220c0c673", features = ["mod_builtin"], default-features = false}
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -15,13 +14,15 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-# getrandom = { version = "0.3", features = ["wasm_js"] }
-cairo-lang-casm = { git = "https://github.com/starkware-libs/cairo.git", rev = "5cc466a", features = ["serde"] }
+getrandom = { version = "0.3", features = ["wasm_js"] }
+cairo-lang-runner = { git = "https://github.com/clealabs/cairo.git", branch = "fix-wasm" }
+cairo-lang-casm = { git = "https://github.com/clealabs/cairo.git", branch = "fix-wasm", features = ["serde"] }
 bytemuck = { version = "1.20.0", features = ["derive"] }
 cairo-air = { git = "https://github.com/clealabs/stwo-cairo", branch = "fix-wasm" }
 cairo-vm = { git = "https://github.com/lambdaclass/cairo-vm", rev = "b1a91f929b5fa29a1a2e9e6990a68a1220c0c673", features = ["mod_builtin"], default-features = false}
 hex = "0.4.3"
 itertools = "0.12.0"
+hashbrown = "0.15.5"
 lol_alloc = "0.4.1"
 serde = "1.0.134"
 serde_json = "1.0.134"
@@ -48,4 +49,4 @@ wasm-bindgen-test = "0.3.34"
 opt-level = 3
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ['-O1']
+wasm-opt = ['-O0']
