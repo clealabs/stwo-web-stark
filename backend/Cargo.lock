@@ -3343,7 +3343,10 @@ name = "stwo-web-stark"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
+ "cairo-air",
+ "cairo-lang-runner",
  "cairo-prove",
+ "cairo-vm",
  "console_error_panic_hook",
  "getrandom 0.3.3",
  "hashbrown 0.15.5",
@@ -3353,6 +3356,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
+ "stwo_cairo_prover",
  "thiserror-no-std",
  "wasm-bindgen",
  "wasm-bindgen-test",
