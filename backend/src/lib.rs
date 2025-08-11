@@ -11,7 +11,7 @@ use stwo_cairo_prover::stwo_prover::core::{
 };
 use wasm_bindgen::prelude::*;
 
-fn secure_pcs_config() -> PcsConfig {
+pub fn secure_pcs_config() -> PcsConfig {
     PcsConfig {
         pow_bits: 26,
         fri_config: FriConfig {
@@ -68,14 +68,18 @@ pub fn run_verify(proof_js: JsValue, with_pedersen_js: JsValue) -> Result<JsValu
     Ok(serde_wasm_bindgen::to_value(&verdict)?)
 }
 
-pub fn execute_and_prove(executable_json: &str, args: Vec<Arg>) -> CairoProof<Blake2sMerkleHasher> {
+pub fn execute_and_prove(
+    executable_json: &str,
+    args: Vec<Arg>,
+    pcs_config: PcsConfig,
+) -> CairoProof<Blake2sMerkleHasher> {
     // Execute.
     let executable = serde_json::from_str(executable_json).expect("Failed to read executable");
     let runner = execute(executable, args);
 
     // Prove.
     let prover_input = prover_input_from_runner(&runner);
-    cairo_prove(prover_input, secure_pcs_config())
+    cairo_prove(prover_input, pcs_config)
 }
 
 pub fn verify(cairo_proof: CairoProof<Blake2sMerkleHasher>, with_pedersen: bool) -> bool {
