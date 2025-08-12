@@ -21,7 +21,7 @@ This package includes utilities to execute Cairo programs, generate proofs, and 
 import init, { run_trace_gen } from "stwo-web-stark";
 
 await init(); // Initialize the WASM module
-const trace = await run_trace_gen(input); // input: string - compiled Cairo program
+const prover_input = await run_trace_gen(input); // input: string - compiled Cairo program
 console.log(trace); // Cairo runner output
 ```
 
@@ -31,7 +31,7 @@ console.log(trace); // Cairo runner output
 import init, { run_prove } from "stwo-web-stark";
 
 await init(); // Initialize the WASM module
-const proof = await run_prove(trace.prover_input); // Generate proof from CPU trace
+const proof = await run_prove(prover_input); // Generate proof from CPU trace
 console.log(proof); // Outputs the generated proof
 ```
 

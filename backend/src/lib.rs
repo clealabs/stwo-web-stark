@@ -1,8 +1,10 @@
+// this file is analogous to https://github.com/clealabs/stwo-cairo/blob/fix-wasm-standalone/cairo-prove/src/main.rs
+
 use cairo_air::{verifier::verify_cairo, CairoProof, PreProcessedTraceVariant};
 use cairo_lang_runner::Arg;
 use cairo_prove::{
     execute::execute,
-    prove::prover_input_from_runner, // prove::{prove as cairo_prove, prover_input_from_runner},
+    prove::{prove as cairo_prove, prover_input_from_runner},
 };
 use cairo_vm::Felt252;
 use stwo_cairo_adapter::ProverInput;
@@ -43,37 +45,26 @@ pub fn secure_pcs_config() -> PcsConfig {
     }
 }
 
-// fn tiny_pcs_config() -> PcsConfig {
-//     PcsConfig {
-//         pow_bits: 0,
-//         fri_config: FriConfig {
-//             log_last_layer_degree_bound: 0,
-//             log_blowup_factor: 1,
-//             n_queries: 1,
-//         },
-//     }
-// }
+/// WARNING: this uses too much memory for wasm
+#[wasm_bindgen]
+pub fn run_execute_and_prove(
+    executable_json_js: JsValue,
+    args_js: JsValue,
+) -> Result<JsValue, JsValue> {
+    set_panic_hook();
 
-// /// WARNING: this uses too much memory for wasm
-// #[wasm_bindgen]
-// pub fn run_execute_and_prove(
-//     executable_json_js: JsValue,
-//     args_js: JsValue,
-// ) -> Result<JsValue, JsValue> {
-//     set_panic_hook();
+    let executable_json: &str = &serde_wasm_bindgen::from_value::<String>(executable_json_js)?;
+    let args_raw: Vec<i128> = serde_wasm_bindgen::from_value(args_js)?;
 
-//     let executable_json: &str = &serde_wasm_bindgen::from_value::<String>(executable_json_js)?;
-//     let args_raw: Vec<i128> = serde_wasm_bindgen::from_value(args_js)?;
+    let args = args_raw
+        .into_iter()
+        .map(|arg| Arg::Value(Felt252::from(arg)))
+        .collect();
 
-//     let args = args_raw
-//         .into_iter()
-//         .map(|arg| Arg::Value(Felt252::from(arg)))
-//         .collect();
-
-//     // let proof = execute_and_prove(executable_json, args, secure_pcs_config());
-//     let proof = execute_and_prove(executable_json, args, PcsConfig::default());
-//     Ok(serde_wasm_bindgen::to_value(&proof)?)
-// }
+    // let proof = execute_and_prove(executable_json, args, secure_pcs_config());
+    let proof = execute_and_prove(executable_json, args, PcsConfig::default());
+    Ok(serde_wasm_bindgen::to_value(&proof)?)
+}
 
 #[wasm_bindgen]
 pub fn run_trace_gen(executable_json_js: JsValue, args_js: JsValue) -> Result<JsValue, JsValue> {
@@ -88,7 +79,9 @@ pub fn run_trace_gen(executable_json_js: JsValue, args_js: JsValue) -> Result<Js
         .collect();
 
     let prover_input = trace_gen(executable_json, args);
-    Ok(serde_wasm_bindgen::to_value(&prover_input)?)
+    let prover_input_json = serde_json::to_string(&prover_input)
+        .map_err(|e| JsValue::from(format!("Failed to serialize prover input: {e}")))?;
+    Ok(serde_wasm_bindgen::to_value(&prover_input_json)?)
 }
 
 #[wasm_bindgen]
@@ -118,20 +111,19 @@ pub fn run_verify(proof_js: JsValue, with_pedersen_js: JsValue) -> Result<JsValu
     Ok(serde_wasm_bindgen::to_value(&verdict)?)
 }
 
-// /// WARNING: this uses too much memory for wasm
-// pub fn execute_and_prove(
-//     executable_json: &str,
-//     args: Vec<Arg>,
-//     pcs_config: PcsConfig,
-// ) -> CairoProof<Blake2sMerkleHasher> {
-//     // Execute.
-//     let executable = serde_json::from_str(executable_json).expect("Failed to read executable");
-//     let runner = execute(executable, args);
-
-//     // Prove.
-//     let prover_input = prover_input_from_runner(&runner);
-//     cairo_prove(prover_input, pcs_config)
-// }
+/// WARNING: this uses too much memory for wasm
+pub fn execute_and_prove(
+    executable_json: &str,
+    args: Vec<Arg>,
+    pcs_config: PcsConfig,
+) -> CairoProof<Blake2sMerkleHasher> {
+    // Execute.
+    let executable = serde_json::from_str(executable_json).expect("Failed to read executable");
+    let runner = execute(executable, args);
+    // Prove.
+    let prover_input = prover_input_from_runner(&runner);
+    cairo_prove(prover_input, pcs_config)
+}
 
 pub fn trace_gen(executable_json: &str, args: Vec<Arg>) -> ProverInput {
     let executable = serde_json::from_str(executable_json).expect("Failed to read executable");

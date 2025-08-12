@@ -124,7 +124,8 @@ export default function Home() {
   }
 
   const stwo_trace_gen = async () => {
-    if (program != null) {
+    // if (program != null) {
+    if (executable != null) {
       setIsLoadingTraceGen(true);
 
       workerRef.current = new Worker(
@@ -160,7 +161,8 @@ export default function Home() {
       };
 
       const message: WorkerMessageTraceGen = {
-        input: program,
+        // input: program,
+        input: executable,
       };
 
       workerRef.current.postMessage(message);
@@ -296,7 +298,7 @@ export default function Home() {
 
       <br />
 
-      <div
+      {/* <div
         className="cursor-pointer p-10 border-2 rounded-2xl border-dashed border-gray-800 hover:bg"
         {...getRootProps()}
       >
@@ -312,7 +314,7 @@ export default function Home() {
             Drag Cairo PIE here, or click to select files
           </p>
         )}
-      </div>
+      </div> */}
 
       <div
         className="cursor-pointer p-6 border-2 rounded-2xl border-dashed border-gray-800 hover:bg"
@@ -332,7 +334,7 @@ export default function Home() {
         )}
       </div>
 
-      <Button
+      {/* <Button
         sx={{
           color: "#F2A900",
           borderColor: "#473200",
@@ -372,7 +374,7 @@ export default function Home() {
             <Typography variant="body2">load pie.zip</Typography>
           </Box>
         )}
-      </Button>
+      </Button> */}
 
       <div className="grid grid-flow-row gap-4">
         <Button

@@ -1,7 +1,8 @@
 import init, { run_trace_gen } from "stwo-web-stark";
 
 export interface WorkerMessage {
-  input: Uint8Array;
+  // input: Uint8Array;
+  input: string;
 }
 
 export interface WorkerResponse {
@@ -15,7 +16,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 
   try {
     await init();
-    const value = await run_trace_gen(input);
+    const value = await run_trace_gen(input, [BigInt(100)]);
 
     // Send results back to the main thread
     const response: WorkerResponse = { prover_input: value };
