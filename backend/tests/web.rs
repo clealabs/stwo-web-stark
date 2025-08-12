@@ -8,7 +8,8 @@ use cairo_vm::Felt252;
 use stwo_cairo_prover::stwo_prover::core::{
     fri::FriConfig, pcs::PcsConfig, vcs::blake2_merkle::Blake2sMerkleChannel,
 };
-use stwo_web_stark::{execute_and_prove, verify};
+use stwo_web_stark::{prove, trace_gen, verify};
+// use stwo_web_stark::{execute_and_prove, verify};
 use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -28,8 +29,10 @@ pub fn tiny_pcs_config() -> PcsConfig {
 fn test_e2e() {
     let executable_json = include_str!("example.executable.json");
     let args = vec![Arg::Value(Felt252::from(100))];
-    let pcs_config = tiny_pcs_config();
-    let cairo_proof = execute_and_prove(executable_json, args, pcs_config);
+    let pcs_config = PcsConfig::default();
+    // let cairo_proof = execute_and_prove(executable_json, args, pcs_config);
+    let prover_input = trace_gen(executable_json, args);
+    let cairo_proof = prove(prover_input).expect("Failed to prove");
     let preprocessed_trace = PreProcessedTraceVariant::CanonicalWithoutPedersen;
     let result = verify_cairo::<Blake2sMerkleChannel>(cairo_proof, pcs_config, preprocessed_trace);
     assert!(result.is_ok());

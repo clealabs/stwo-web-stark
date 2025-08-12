@@ -3356,6 +3356,7 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
+ "stwo-cairo-adapter",
  "stwo_cairo_prover",
  "thiserror-no-std",
  "wasm-bindgen",

@@ -1,4 +1,4 @@
-// import init, { run_prove } from "stwo-web-stark";
+import init, { run_prove } from "stwo-web-stark";
 
 export interface WorkerMessage {
   input: string;
@@ -13,9 +13,8 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
   const { input } = event.data;
 
   try {
-    // await init();
-    // const value = await run_prove(input);
-    const value = "none";
+    await init();
+    const value = await run_prove(input);
 
     // Send results back to the main thread
     const response: WorkerResponse = { value: value };

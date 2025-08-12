@@ -1,10 +1,22 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { WorkerMessage as WorkerMessageTraceGen, WorkerResponse as WorkerResponseTraceGen } from "@/worker_trace_gen";
-import { WorkerMessage as WorkerMessageProve, WorkerResponse as WorkerResponseProve } from "@/worker_prove";
-import { WorkerMessage as WorkerMessageVerify, WorkerResponse as WorkerResponseVerify } from "@/worker_verify";
-import { WorkerMessage as WorkerMessageExecProve, WorkerResponse as WorkerResponseExecProve } from "@/worker_exec_prove";
+import {
+  WorkerMessage as WorkerMessageTraceGen,
+  WorkerResponse as WorkerResponseTraceGen,
+} from "@/worker_trace_gen";
+import {
+  WorkerMessage as WorkerMessageProve,
+  WorkerResponse as WorkerResponseProve,
+} from "@/worker_prove";
+import {
+  WorkerMessage as WorkerMessageVerify,
+  WorkerResponse as WorkerResponseVerify,
+} from "@/worker_verify";
+import {
+  WorkerMessage as WorkerMessageExecProve,
+  WorkerResponse as WorkerResponseExecProve,
+} from "@/worker_exec_prove";
 import { Box, Button, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useDropzone } from "react-dropzone";
@@ -12,7 +24,9 @@ import { useDropzone } from "react-dropzone";
 export default function Home() {
   const workerRef = useRef<Worker>(null);
   const [trace, setTrace] = useState<string | null>(null);
-  const [executionResources, setExecutionResources] = useState<string | null>(null);
+  const [executionResources, setExecutionResources] = useState<string | null>(
+    null
+  );
   const [proof, setProof] = useState<string | null>(null);
   const [verify, setVerify] = useState<boolean | null>(null);
 
@@ -39,9 +53,7 @@ export default function Home() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
 
-  const ondrop = <T extends File>(
-    acceptedFiles: T[],
-  ) => {
+  const ondrop = <T extends File>(acceptedFiles: T[]) => {
     const file = acceptedFiles[0];
     const reader = new FileReader();
 
@@ -53,7 +65,7 @@ export default function Home() {
       }
     };
 
-  reader.readAsArrayBuffer(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -78,11 +90,14 @@ export default function Home() {
     };
     reader.readAsText(file);
   };
-  const { getRootProps: getExecRootProps, getInputProps: getExecInputProps, isDragActive: isExecDragActive } = useDropzone({
+  const {
+    getRootProps: getExecRootProps,
+    getInputProps: getExecInputProps,
+    isDragActive: isExecDragActive,
+  } = useDropzone({
     onDrop: onDropExecutable,
-    accept: { 'application/json': ['.json'] }
+    accept: { "application/json": [".json"] },
   });
-
 
   function humanFileSize(bytes: number, si = false, dp = 1) {
     const thresh = si ? 1000 : 1024;
@@ -108,19 +123,25 @@ export default function Home() {
     return bytes.toFixed(dp) + " " + units[u];
   }
 
-
   const stwo_trace_gen = async () => {
     if (program != null) {
       setIsLoadingTraceGen(true);
 
-      workerRef.current = new Worker(new URL("../worker_trace_gen.ts", import.meta.url), {
-        type: "module",
-      });
+      workerRef.current = new Worker(
+        new URL("../worker_trace_gen.ts", import.meta.url),
+        {
+          type: "module",
+        }
+      );
 
       const startTime = Date.now();
 
-      workerRef.current.onmessage = (event: MessageEvent<WorkerResponseTraceGen>) => {
-        const { execution_resources, prover_input, error } = event.data;
+      workerRef.current.onmessage = (
+        event: MessageEvent<WorkerResponseTraceGen>
+      ) => {
+        // const { execution_resources, prover_input, error } = event.data;
+        const { prover_input, error } = event.data;
+        const execution_resources = "NOT SUPPORTED";
 
         if (error) {
           console.error(error);
@@ -150,13 +171,18 @@ export default function Home() {
     if (trace != null) {
       setIsLoadingProve(true);
 
-      workerRef.current = new Worker(new URL("../worker_prove.ts", import.meta.url), {
-        type: "module",
-      });
+      workerRef.current = new Worker(
+        new URL("../worker_prove.ts", import.meta.url),
+        {
+          type: "module",
+        }
+      );
 
       const startTime = Date.now();
 
-      workerRef.current.onmessage = (event: MessageEvent<WorkerResponseProve>) => {
+      workerRef.current.onmessage = (
+        event: MessageEvent<WorkerResponseProve>
+      ) => {
         const { value, error } = event.data;
 
         if (error) {
@@ -186,13 +212,18 @@ export default function Home() {
     if (executable != null) {
       setIsLoadingExecProve(true);
 
-      workerRef.current = new Worker(new URL("../worker_exec_prove.ts", import.meta.url), {
-        type: "module",
-      });
+      workerRef.current = new Worker(
+        new URL("../worker_exec_prove.ts", import.meta.url),
+        {
+          type: "module",
+        }
+      );
 
       const startTime = Date.now();
 
-      workerRef.current.onmessage = (event: MessageEvent<WorkerResponseExecProve>) => {
+      workerRef.current.onmessage = (
+        event: MessageEvent<WorkerResponseExecProve>
+      ) => {
         const { value, error } = event.data;
         if (error) {
           console.error(error);
@@ -214,13 +245,18 @@ export default function Home() {
     if (proof != null) {
       setIsLoadingVerify(true);
 
-      workerRef.current = new Worker(new URL("../worker_verify.ts", import.meta.url), {
-        type: "module",
-      });
+      workerRef.current = new Worker(
+        new URL("../worker_verify.ts", import.meta.url),
+        {
+          type: "module",
+        }
+      );
 
       const startTime = Date.now();
 
-      workerRef.current.onmessage = (event: MessageEvent<WorkerResponseVerify>) => {
+      workerRef.current.onmessage = (
+        event: MessageEvent<WorkerResponseVerify>
+      ) => {
         const { value, error } = event.data;
 
         if (error) {
@@ -260,7 +296,7 @@ export default function Home() {
 
       <br />
 
-  <div
+      <div
         className="cursor-pointer p-10 border-2 rounded-2xl border-dashed border-gray-800 hover:bg"
         {...getRootProps()}
       >
@@ -290,7 +326,9 @@ export default function Home() {
         ) : isExecDragActive ? (
           <p className="text-center">Drop the executable JSON here ...</p>
         ) : (
-          <p className="text-center">Drag executable JSON here, or click to select file</p>
+          <p className="text-center">
+            Drag executable JSON here, or click to select file
+          </p>
         )}
       </div>
 
@@ -311,7 +349,9 @@ export default function Home() {
           const response = await fetch("pie.zip");
 
           if (!response.ok) {
-            throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+            throw new Error(
+              `Failed to fetch file: ${response.status} ${response.statusText}`
+            );
           }
 
           // Get the file as an ArrayBuffer and convert it to Uint8Array
@@ -338,9 +378,11 @@ export default function Home() {
         <Button
           sx={{ height: 50 }}
           variant="outlined"
-            size="small"
-            disabled={isLoadingExecProve || executable == null}
-            onClick={async () => { stwo_execute_and_prove(); }}
+          size="small"
+          disabled={isLoadingExecProve || executable == null}
+          onClick={async () => {
+            stwo_execute_and_prove();
+          }}
         >
           {isLoadingExecProve ? (
             <CircularProgress size={24} sx={{ animationDuration: "700ms" }} />
@@ -351,7 +393,9 @@ export default function Home() {
           )}
         </Button>
         <div className="grid justify-center gap-1 text-xs min-h-6">
-          {timeExecProve !== null ? `Time: ${timeExecProve / 1000} seconds` : null}
+          {timeExecProve !== null
+            ? `Time: ${timeExecProve / 1000} seconds`
+            : null}
         </div>
       </div>
 
@@ -368,10 +412,7 @@ export default function Home() {
           }}
         >
           {isLoadingTraceGen ? (
-            <CircularProgress
-              size={24}
-              sx={{ animationDuration: "700ms" }}
-            />
+            <CircularProgress size={24} sx={{ animationDuration: "700ms" }} />
           ) : (
             <Box display="flex" flexDirection="column" alignItems="center">
               <Typography variant="body2">trace_gen</Typography>
@@ -379,7 +420,9 @@ export default function Home() {
           )}
         </Button>
         <div className="grid justify-center gap-1 text-xs min-h-6">
-          {timeTraceGen !== null ? `Time: ${timeTraceGen / 1000} seconds` : null}
+          {timeTraceGen !== null
+            ? `Time: ${timeTraceGen / 1000} seconds`
+            : null}
         </div>
 
         <Button
@@ -391,7 +434,7 @@ export default function Home() {
           disabled={trace == null}
           onClick={async () => {
             if (trace != null) {
-              const blob = new Blob([trace], { type: 'application/json' });
+              const blob = new Blob([trace], { type: "application/json" });
               const download_url = window.URL.createObjectURL(blob);
 
               // Create an anchor element for downloading the file
@@ -423,10 +466,7 @@ export default function Home() {
           }}
         >
           {isLoadingProve ? (
-            <CircularProgress
-              size={24}
-              sx={{ animationDuration: "700ms" }}
-            />
+            <CircularProgress size={24} sx={{ animationDuration: "700ms" }} />
           ) : (
             <Box display="flex" flexDirection="column" alignItems="center">
               <Typography variant="body2">prove</Typography>
@@ -445,7 +485,7 @@ export default function Home() {
           disabled={proof == null}
           onClick={async () => {
             if (proof != null) {
-              const blob = new Blob([proof], { type: 'application/json' });
+              const blob = new Blob([proof], { type: "application/json" });
               const download_url = window.URL.createObjectURL(blob);
 
               // Create an anchor element for downloading the file
@@ -471,20 +511,25 @@ export default function Home() {
           }}
           variant="outlined"
           size="small"
-          color={verify == null ? "primary" : verify == true ? "success" : "error"}
+          color={
+            verify == null ? "primary" : verify == true ? "success" : "error"
+          }
           disabled={isLoadingVerify}
           onClick={async () => {
             stwo_verify();
           }}
         >
           {isLoadingVerify ? (
-            <CircularProgress
-              size={24}
-              sx={{ animationDuration: "700ms" }}
-            />
+            <CircularProgress size={24} sx={{ animationDuration: "700ms" }} />
           ) : (
             <Box display="flex" flexDirection="column" alignItems="center">
-              <Typography variant="body2">{verify == null ? "verify" : verify == true ? "proof correct" : "proof wrong"}</Typography>
+              <Typography variant="body2">
+                {verify == null
+                  ? "verify"
+                  : verify == true
+                  ? "proof correct"
+                  : "proof wrong"}
+              </Typography>
             </Box>
           )}
         </Button>

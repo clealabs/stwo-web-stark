@@ -2,13 +2,18 @@ use cairo_air::{verifier::verify_cairo, CairoProof, PreProcessedTraceVariant};
 use cairo_lang_runner::Arg;
 use cairo_prove::{
     execute::execute,
-    prove::{prove as cairo_prove, prover_input_from_runner},
+    prove::prover_input_from_runner, // prove::{prove as cairo_prove, prover_input_from_runner},
 };
 use cairo_vm::Felt252;
-use stwo_cairo_prover::stwo_prover::core::{
-    fri::FriConfig,
-    pcs::PcsConfig,
-    vcs::blake2_merkle::{Blake2sMerkleChannel, Blake2sMerkleHasher},
+use stwo_cairo_adapter::ProverInput;
+use stwo_cairo_prover::{
+    prover::prove_cairo,
+    stwo_prover::core::{
+        fri::FriConfig,
+        pcs::PcsConfig,
+        prover::ProvingError,
+        vcs::blake2_merkle::{Blake2sMerkleChannel, Blake2sMerkleHasher},
+    },
 };
 use wasm_bindgen::prelude::*;
 
@@ -49,45 +54,29 @@ pub fn secure_pcs_config() -> PcsConfig {
 //     }
 // }
 
+// /// WARNING: this uses too much memory for wasm
 // #[wasm_bindgen]
-// pub fn run_trace_gen(program_content_js: JsValue) -> Result<JsValue, JsValue> {
+// pub fn run_execute_and_prove(
+//     executable_json_js: JsValue,
+//     args_js: JsValue,
+// ) -> Result<JsValue, JsValue> {
 //     set_panic_hook();
 
-//     let program = Program::from_bytes(
-//         serde_wasm_bindgen::from_value::<String>(program_content_js)?.as_bytes(),
-//         None,
-//     )
-//     .map_err(|e| JsValue::from(format!("Failed to deserialize program: {e}")))?;
-//     let trace_gen_output =
-//         trace_gen(program).map_err(|e| JsValue::from(format!("Failed to generate trace: {e}")))?;
-//     Ok(serde_wasm_bindgen::to_value(&TraceGenOutputJS {
-//         prover_input: serde_json::to_string(&trace_gen_output.prover_input)
-//             .map_err(|e| JsValue::from(format!("Failed to serialize prover input: {e}")))?,
-//         execution_resources: serde_json::to_string(&trace_gen_output.execution_resources)
-//             .map_err(|e| JsValue::from(format!("Failed to serialize execution resources:
-// {e}")))?,     })?)
-// }
+//     let executable_json: &str = &serde_wasm_bindgen::from_value::<String>(executable_json_js)?;
+//     let args_raw: Vec<i128> = serde_wasm_bindgen::from_value(args_js)?;
 
-// #[wasm_bindgen]
-// pub fn run_prove(prover_input_js: JsValue) -> Result<JsValue, JsValue> {
-//     set_panic_hook();
+//     let args = args_raw
+//         .into_iter()
+//         .map(|arg| Arg::Value(Felt252::from(arg)))
+//         .collect();
 
-//     let prover_input: ProverInput =
-//         serde_json::from_str(&serde_wasm_bindgen::from_value::<String>(prover_input_js)?)
-//             .map_err(|e| JsValue::from(format!("Failed to deserialize prover input: {e}")))?;
-//     let proof =
-//         prove(prover_input).map_err(|e| JsValue::from(format!("Failed to generate proof:
-// {e}")))?;     Ok(serde_wasm_bindgen::to_value(
-//         &serde_json::to_string(&proof)
-//             .map_err(|e| JsValue::from(format!("Failed to serialize proof: {e}")))?,
-//     )?)
+//     // let proof = execute_and_prove(executable_json, args, secure_pcs_config());
+//     let proof = execute_and_prove(executable_json, args, PcsConfig::default());
+//     Ok(serde_wasm_bindgen::to_value(&proof)?)
 // }
 
 #[wasm_bindgen]
-pub fn run_execute_and_prove(
-    executable_json_js: JsValue,
-    args_js: JsValue,
-) -> Result<JsValue, JsValue> {
+pub fn run_trace_gen(executable_json_js: JsValue, args_js: JsValue) -> Result<JsValue, JsValue> {
     set_panic_hook();
 
     let executable_json: &str = &serde_wasm_bindgen::from_value::<String>(executable_json_js)?;
@@ -98,9 +87,23 @@ pub fn run_execute_and_prove(
         .map(|arg| Arg::Value(Felt252::from(arg)))
         .collect();
 
-    // let proof = execute_and_prove(executable_json, args, secure_pcs_config());
-    let proof = execute_and_prove(executable_json, args, PcsConfig::default());
-    Ok(serde_wasm_bindgen::to_value(&proof)?)
+    let prover_input = trace_gen(executable_json, args);
+    Ok(serde_wasm_bindgen::to_value(&prover_input)?)
+}
+
+#[wasm_bindgen]
+pub fn run_prove(prover_input_js: JsValue) -> Result<JsValue, JsValue> {
+    set_panic_hook();
+
+    let prover_input: ProverInput =
+        serde_json::from_str(&serde_wasm_bindgen::from_value::<String>(prover_input_js)?)
+            .map_err(|e| JsValue::from(format!("Failed to deserialize prover input: {e}")))?;
+    let proof =
+        prove(prover_input).map_err(|e| JsValue::from(format!("Failed to generate proof: {e}")))?;
+    Ok(serde_wasm_bindgen::to_value(
+        &serde_json::to_string(&proof)
+            .map_err(|e| JsValue::from(format!("Failed to serialize proof: {e}")))?,
+    )?)
 }
 
 #[wasm_bindgen]
@@ -115,18 +118,33 @@ pub fn run_verify(proof_js: JsValue, with_pedersen_js: JsValue) -> Result<JsValu
     Ok(serde_wasm_bindgen::to_value(&verdict)?)
 }
 
-pub fn execute_and_prove(
-    executable_json: &str,
-    args: Vec<Arg>,
-    pcs_config: PcsConfig,
-) -> CairoProof<Blake2sMerkleHasher> {
-    // Execute.
+// /// WARNING: this uses too much memory for wasm
+// pub fn execute_and_prove(
+//     executable_json: &str,
+//     args: Vec<Arg>,
+//     pcs_config: PcsConfig,
+// ) -> CairoProof<Blake2sMerkleHasher> {
+//     // Execute.
+//     let executable = serde_json::from_str(executable_json).expect("Failed to read executable");
+//     let runner = execute(executable, args);
+
+//     // Prove.
+//     let prover_input = prover_input_from_runner(&runner);
+//     cairo_prove(prover_input, pcs_config)
+// }
+
+pub fn trace_gen(executable_json: &str, args: Vec<Arg>) -> ProverInput {
     let executable = serde_json::from_str(executable_json).expect("Failed to read executable");
     let runner = execute(executable, args);
+    prover_input_from_runner(&runner)
+}
 
-    // Prove.
-    let prover_input = prover_input_from_runner(&runner);
-    cairo_prove(prover_input, secure_pcs_config())
+pub fn prove(prover_input: ProverInput) -> Result<CairoProof<Blake2sMerkleHasher>, ProvingError> {
+    prove_cairo::<Blake2sMerkleChannel>(
+        prover_input,
+        PcsConfig::default(),
+        PreProcessedTraceVariant::CanonicalWithoutPedersen,
+    )
 }
 
 pub fn verify(cairo_proof: CairoProof<Blake2sMerkleHasher>, with_pedersen: bool) -> bool {
