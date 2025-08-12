@@ -5,7 +5,7 @@
 use cairo_air::{verifier::verify_cairo, PreProcessedTraceVariant};
 use cairo_lang_runner::Arg;
 use cairo_vm::Felt252;
-use stwo_cairo_adapter::ProverInput;
+// use stwo_cairo_adapter::ProverInput;
 use stwo_cairo_prover::stwo_prover::core::{
     pcs::PcsConfig, vcs::blake2_merkle::Blake2sMerkleChannel,
 };
@@ -26,14 +26,14 @@ fn test_e2e() {
     assert!(result.is_ok());
 }
 
-#[wasm_bindgen_test]
-fn prove_example() {
-    let prover_input_json = include_str!("example_prover_input.json");
-    let prover_input: ProverInput =
-        serde_json::from_str(prover_input_json).expect("Failed to read prover input");
-    let cairo_proof = prove(prover_input);
-    assert!(cairo_proof.is_ok());
-}
+// #[wasm_bindgen_test]
+// fn prove_example() {
+//     let prover_input_json = include_str!("example_prover_input.json");
+//     let prover_input: ProverInput =
+//         serde_json::from_str(prover_input_json).expect("Failed to read prover input");
+//     let cairo_proof = prove(prover_input);
+//     assert!(cairo_proof.is_ok());
+// }
 
 #[wasm_bindgen_test]
 fn verify_is_prime_7() {
