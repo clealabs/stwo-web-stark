@@ -5,8 +5,9 @@
 use cairo_air::{verifier::verify_cairo, PreProcessedTraceVariant};
 use cairo_lang_runner::Arg;
 use cairo_vm::Felt252;
+use stwo_cairo_adapter::ProverInput;
 use stwo_cairo_prover::stwo_prover::core::{
-    fri::FriConfig, pcs::PcsConfig, vcs::blake2_merkle::Blake2sMerkleChannel,
+    pcs::PcsConfig, vcs::blake2_merkle::Blake2sMerkleChannel,
 };
 use stwo_web_stark::{prove, trace_gen, verify};
 use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
@@ -27,7 +28,7 @@ fn test_e2e() {
 
 #[wasm_bindgen_test]
 fn prove_example() {
-    let prover_input_json = include_str!("example.prover_input.json");
+    let prover_input_json = include_str!("example_prover_input.json");
     let prover_input: ProverInput =
         serde_json::from_str(prover_input_json).expect("Failed to read prover input");
     let cairo_proof = prove(prover_input);
