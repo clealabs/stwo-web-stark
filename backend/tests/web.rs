@@ -2,23 +2,37 @@
 
 #![cfg(target_arch = "wasm32")]
 
-extern crate wasm_bindgen_test;
-// use cairo_vm::types::program::Program;
-// use stwo_web_stark::{prove, trace_gen, verify};
+use cairo_air::{verifier::verify_cairo, PreProcessedTraceVariant};
 use cairo_lang_runner::Arg;
 use cairo_vm::Felt252;
+use stwo_cairo_prover::stwo_prover::core::{
+    fri::FriConfig, pcs::PcsConfig, vcs::blake2_merkle::Blake2sMerkleChannel,
+};
 use stwo_web_stark::{execute_and_prove, verify};
-use wasm_bindgen_test::*;
+use wasm_bindgen_test::{wasm_bindgen_test, wasm_bindgen_test_configure};
 
 wasm_bindgen_test_configure!(run_in_browser);
 
+pub fn tiny_pcs_config() -> PcsConfig {
+    PcsConfig {
+        pow_bits: 0,
+        fri_config: FriConfig {
+            log_last_layer_degree_bound: 0,
+            log_blowup_factor: 1,
+            n_queries: 1,
+        },
+    }
+}
+
 #[wasm_bindgen_test]
-fn trace_gen_prove_verify() {
-    let executable_json = include_str!("is_prime_executable.json");
-    let args = vec![Arg::Value(Felt252::from(7))];
-    let cairo_proof = execute_and_prove(executable_json, args);
-    let verdict = verify(cairo_proof, false);
-    assert!(verdict, "cairo proof verification failed");
+fn test_e2e() {
+    let executable_json = include_str!("example.executable.json");
+    let args = vec![Arg::Value(Felt252::from(100))];
+    let pcs_config = tiny_pcs_config();
+    let cairo_proof = execute_and_prove(executable_json, args, pcs_config);
+    let preprocessed_trace = PreProcessedTraceVariant::CanonicalWithoutPedersen;
+    let result = verify_cairo::<Blake2sMerkleChannel>(cairo_proof, pcs_config, preprocessed_trace);
+    assert!(result.is_ok());
 }
 
 #[wasm_bindgen_test]

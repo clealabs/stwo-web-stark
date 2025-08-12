@@ -1,11 +1,11 @@
-import init, { run_verify } from "stwo-web-stark";
+import init, { run_execute_and_prove } from "stwo-web-stark";
 
 export interface WorkerMessage {
   input: string;
 }
 
 export interface WorkerResponse {
-  value?: boolean;
+  value?: string;
   error?: Error;
 }
 
@@ -14,7 +14,7 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 
   try {
     await init();
-    const value = await run_verify(input, false);
+    const value = await run_execute_and_prove(input, [BigInt(100)]);
 
     // Send results back to the main thread
     const response: WorkerResponse = { value: value };

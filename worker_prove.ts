@@ -1,27 +1,28 @@
-import init, { run_prove } from "stwo-web-stark";
+// import init, { run_prove } from "stwo-web-stark";
 
 export interface WorkerMessage {
-    input: string;
+  input: string;
 }
 
 export interface WorkerResponse {
-    value?: string;
-    error?: Error;
+  value?: string;
+  error?: Error;
 }
 
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-    const { input } = event.data;
+  const { input } = event.data;
 
-    try {
-        await init();
-        const value = await run_prove(input);
+  try {
+    // await init();
+    // const value = await run_prove(input);
+    const value = "none";
 
-        // Send results back to the main thread
-        const response: WorkerResponse = { value: value };
-        self.postMessage(response);
-    } catch (error) {
-        // Send error back to the main thread
-        const response: WorkerResponse = { error: error as Error };
-        self.postMessage(response);
-    }
+    // Send results back to the main thread
+    const response: WorkerResponse = { value: value };
+    self.postMessage(response);
+  } catch (error) {
+    // Send error back to the main thread
+    const response: WorkerResponse = { error: error as Error };
+    self.postMessage(response);
+  }
 };

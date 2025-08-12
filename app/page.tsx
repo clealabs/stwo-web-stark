@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { WorkerMessage as WorkerMessageTraceGen, WorkerResponse as WorkerResponseTraceGen } from "@/worker_trace_gen";
 import { WorkerMessage as WorkerMessageProve, WorkerResponse as WorkerResponseProve } from "@/worker_prove";
 import { WorkerMessage as WorkerMessageVerify, WorkerResponse as WorkerResponseVerify } from "@/worker_verify";
+import { WorkerMessage as WorkerMessageExecProve, WorkerResponse as WorkerResponseExecProve } from "@/worker_exec_prove";
 import { Box, Button, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useDropzone } from "react-dropzone";
@@ -27,6 +28,14 @@ export default function Home() {
   const [program, setProgram] = useState<Uint8Array | null>(null);
   const [isLoadingProgram, setIsLoadingProgram] = useState<boolean>(false);
 
+  // Executable JSON (for direct execute+prove path)
+  const [executable, setExecutable] = useState<string | null>(null);
+  const [execFileName, setExecFileName] = useState<string | null>(null);
+  const [execFileSize, setExecFileSize] = useState<number | null>(null);
+  const [isLoadingExecFile, setIsLoadingExecFile] = useState<boolean>(false);
+  const [isLoadingExecProve, setIsLoadingExecProve] = useState<boolean>(false);
+  const [timeExecProve, setTimeExecProve] = useState<number | null>(null);
+
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
 
@@ -44,11 +53,34 @@ export default function Home() {
       }
     };
 
-    reader.readAsArrayBuffer(file);
+  reader.readAsArrayBuffer(file);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop: ondrop,
+  });
+
+  // Dropzone for executable JSON
+  const onDropExecutable = <T extends File>(acceptedFiles: T[]) => {
+    const file = acceptedFiles[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target && typeof e.target.result === "string") {
+        setExecutable(e.target.result);
+        setExecFileName(file.name);
+        setExecFileSize(file.size);
+      } else if (e.target && e.target.result instanceof ArrayBuffer) {
+        const decoder = new TextDecoder();
+        setExecutable(decoder.decode(e.target.result));
+        setExecFileName(file.name);
+        setExecFileSize(file.size);
+      }
+    };
+    reader.readAsText(file);
+  };
+  const { getRootProps: getExecRootProps, getInputProps: getExecInputProps, isDragActive: isExecDragActive } = useDropzone({
+    onDrop: onDropExecutable,
+    accept: { 'application/json': ['.json'] }
   });
 
 
@@ -150,6 +182,34 @@ export default function Home() {
     }
   };
 
+  const stwo_execute_and_prove = async () => {
+    if (executable != null) {
+      setIsLoadingExecProve(true);
+
+      workerRef.current = new Worker(new URL("../worker_exec_prove.ts", import.meta.url), {
+        type: "module",
+      });
+
+      const startTime = Date.now();
+
+      workerRef.current.onmessage = (event: MessageEvent<WorkerResponseExecProve>) => {
+        const { value, error } = event.data;
+        if (error) {
+          console.error(error);
+        } else if (value) {
+          setProof(value);
+        }
+        const endTime = Date.now();
+        setTimeExecProve(endTime - startTime);
+        workerRef.current?.terminate();
+        setIsLoadingExecProve(false);
+      };
+
+      const message: WorkerMessageExecProve = { input: executable };
+      workerRef.current.postMessage(message);
+    }
+  };
+
   const stwo_verify = async () => {
     if (proof != null) {
       setIsLoadingVerify(true);
@@ -200,7 +260,7 @@ export default function Home() {
 
       <br />
 
-      <div
+  <div
         className="cursor-pointer p-10 border-2 rounded-2xl border-dashed border-gray-800 hover:bg"
         {...getRootProps()}
       >
@@ -215,6 +275,22 @@ export default function Home() {
           <p className="text-center">
             Drag Cairo PIE here, or click to select files
           </p>
+        )}
+      </div>
+
+      <div
+        className="cursor-pointer p-6 border-2 rounded-2xl border-dashed border-gray-800 hover:bg"
+        {...getExecRootProps()}
+      >
+        <input className="w-full" {...getExecInputProps()} />
+        {execFileName != null && execFileSize != null ? (
+          <p className="text-center">
+            {execFileName} - {humanFileSize(execFileSize)}
+          </p>
+        ) : isExecDragActive ? (
+          <p className="text-center">Drop the executable JSON here ...</p>
+        ) : (
+          <p className="text-center">Drag executable JSON here, or click to select file</p>
         )}
       </div>
 
@@ -257,6 +333,27 @@ export default function Home() {
           </Box>
         )}
       </Button>
+
+      <div className="grid grid-flow-row gap-4">
+        <Button
+          sx={{ height: 50 }}
+          variant="outlined"
+            size="small"
+            disabled={isLoadingExecProve || executable == null}
+            onClick={async () => { stwo_execute_and_prove(); }}
+        >
+          {isLoadingExecProve ? (
+            <CircularProgress size={24} sx={{ animationDuration: "700ms" }} />
+          ) : (
+            <Box display="flex" flexDirection="column" alignItems="center">
+              <Typography variant="body2">execute_and_prove</Typography>
+            </Box>
+          )}
+        </Button>
+        <div className="grid justify-center gap-1 text-xs min-h-6">
+          {timeExecProve !== null ? `Time: ${timeExecProve / 1000} seconds` : null}
+        </div>
+      </div>
 
       <div className="grid grid-flow-row gap-4">
         <Button
