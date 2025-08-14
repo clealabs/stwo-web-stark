@@ -14,24 +14,18 @@ crate-type = ["cdylib", "rlib"]
 default = ["console_error_panic_hook"]
 
 [dependencies]
-getrandom = { version = "0.3", features = ["wasm_js"] }
-bytemuck = { version = "1.20.0", features = ["derive"] }
-hex = "0.4.3"
-itertools = "0.12.0"
-hashbrown = "0.15.5"
-lol_alloc = "0.4.1"
+getrandom = { version = "0.3" }
+#bytemuck = { version = "1.20.0", features = ["derive"] }
+#hashbrown = "0.15.5"
 serde = "1.0.134"
 serde_json = "1.0.134"
-serde-wasm-bindgen = "0.6.5"
 thiserror-no-std = "2.0.2"
-wasm-bindgen = "0.2.100"
-zip = { version = "2.2.2", features = ["deflate"], default-features = false}
 cairo-air = { git = "https://github.com/clealabs/stwo-cairo", branch = "62c3c4a-fix-wasm" }
-cairo-lang-runner = { git = "https://github.com/clealabs/cairo.git", branch = "fix-wasm" }
+#cairo-lang-runner = { git = "https://github.com/clealabs/cairo.git", branch = "fix-wasm" }
 stwo-cairo-adapter = { git = "https://github.com/clealabs/stwo-cairo", branch = "62c3c4a-fix-wasm", default-features = false}
 stwo_cairo_prover = { git = "https://github.com/clealabs/stwo-cairo", branch = "62c3c4a-fix-wasm" }
 cairo-vm = { git = "https://github.com/lambdaclass/cairo-vm", rev = "b1a91f929b5fa29a1a2e9e6990a68a1220c0c673", features = ["mod_builtin"], default-features = false}
-cairo-prove = { git = "https://github.com/clealabs/stwo-cairo", rev = "a763dae"}
+#cairo-prove = { git = "https://github.com/clealabs/stwo-cairo", rev = "a763dae"}
 
 # The `console_error_panic_hook` crate provides better debugging of panics by
 # logging them with `console.error`. This is great for development, but requires
@@ -40,11 +34,11 @@ cairo-prove = { git = "https://github.com/clealabs/stwo-cairo", rev = "a763dae"}
 console_error_panic_hook = { version = "0.1.7", optional = true }
 
 [dev-dependencies]
-wasm-bindgen-test = "0.3.34"
+#wasm-bindgen-test = "0.3.34"
 
 [profile.release]
 # Tell `rustc` to optimize for small code size.
 opt-level = 3
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ['-O0']
+#wasm-opt = ['-O0']
