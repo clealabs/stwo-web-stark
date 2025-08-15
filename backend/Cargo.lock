@@ -584,7 +584,7 @@ checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 [[package]]
 name = "cairo-air"
 version = "0.1.1"
-source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm#6aea139caf9956fdac1841efc1289346aeaf0fc0"
+source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
 dependencies = [
  "clap",
  "itertools 0.12.1",
@@ -598,9 +598,34 @@ dependencies = [
  "starknet-curve 0.5.1",
  "starknet-ff",
  "starknet-types-core",
- "stwo-cairo-adapter",
- "stwo-cairo-common",
- "stwo-cairo-serialize",
+ "stwo-cairo-adapter 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-cairo-common 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-cairo-serialize 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-prover",
+ "thiserror 2.0.12",
+ "tracing",
+]
+
+[[package]]
+name = "cairo-air"
+version = "0.1.1"
+source = "git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
+dependencies = [
+ "clap",
+ "itertools 0.12.1",
+ "log",
+ "num-traits",
+ "paste",
+ "rayon",
+ "serde",
+ "serde_json",
+ "sonic-rs",
+ "starknet-curve 0.5.1",
+ "starknet-ff",
+ "starknet-types-core",
+ "stwo-cairo-adapter 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
+ "stwo-cairo-common 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
+ "stwo-cairo-serialize 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
  "stwo-prover",
  "thiserror 2.0.12",
  "tracing",
@@ -1154,9 +1179,9 @@ dependencies = [
 [[package]]
 name = "cairo-prove"
 version = "0.1.0"
-source = "git+https://github.com/clealabs/stwo-cairo?rev=a763dae#a763daec4e6ac96e9d271212a2b269c9e1042ee7"
+source = "git+https://github.com/clealabs/stwo-cairo?branch=fix-wasm-standalone-cpu#8bc5e4c6d90024c9e385776cd714e36495be46aa"
 dependencies = [
- "cairo-air",
+ "cairo-air 0.1.1 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
  "cairo-lang-casm 2.11.4",
  "cairo-lang-compiler",
  "cairo-lang-executable",
@@ -1169,9 +1194,9 @@ dependencies = [
  "log",
  "num-bigint",
  "serde_json",
- "stwo-cairo-adapter",
- "stwo-cairo-serialize",
- "stwo_cairo_prover",
+ "stwo-cairo-adapter 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-cairo-serialize 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo_cairo_prover 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
 ]
 
 [[package]]
@@ -3260,7 +3285,7 @@ dependencies = [
 [[package]]
 name = "stwo-cairo-adapter"
 version = "0.1.0"
-source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm#6aea139caf9956fdac1841efc1289346aeaf0fc0"
+source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
 dependencies = [
  "bincode 2.0.1",
  "bytemuck",
@@ -3273,7 +3298,29 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "stwo-cairo-common",
+ "stwo-cairo-common 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-prover",
+ "thiserror 2.0.12",
+ "tracing",
+]
+
+[[package]]
+name = "stwo-cairo-adapter"
+version = "0.1.0"
+source = "git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
+dependencies = [
+ "bincode 2.0.1",
+ "bytemuck",
+ "cairo-lang-casm 2.12.0",
+ "cairo-vm",
+ "dashmap",
+ "itertools 0.12.1",
+ "log",
+ "memmap2",
+ "rayon",
+ "serde",
+ "serde_json",
+ "stwo-cairo-common 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
  "stwo-prover",
  "thiserror 2.0.12",
  "tracing",
@@ -3282,7 +3329,7 @@ dependencies = [
 [[package]]
 name = "stwo-cairo-common"
 version = "0.1.0"
-source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm#6aea139caf9956fdac1841efc1289346aeaf0fc0"
+source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
 dependencies = [
  "bytemuck",
  "itertools 0.12.1",
@@ -3291,24 +3338,59 @@ dependencies = [
  "serde_arrays",
  "starknet-ff",
  "starknet-types-core",
- "stwo-cairo-serialize",
+ "stwo-cairo-serialize 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-prover",
+]
+
+[[package]]
+name = "stwo-cairo-common"
+version = "0.1.0"
+source = "git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
+dependencies = [
+ "bytemuck",
+ "itertools 0.12.1",
+ "ruint",
+ "serde",
+ "serde_arrays",
+ "starknet-ff",
+ "starknet-types-core",
+ "stwo-cairo-serialize 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
  "stwo-prover",
 ]
 
 [[package]]
 name = "stwo-cairo-serialize"
 version = "0.1.0"
-source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm#6aea139caf9956fdac1841efc1289346aeaf0fc0"
+source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
 dependencies = [
  "starknet-ff",
- "stwo-cairo-serialize-derive",
+ "stwo-cairo-serialize-derive 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-prover",
+]
+
+[[package]]
+name = "stwo-cairo-serialize"
+version = "0.1.0"
+source = "git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
+dependencies = [
+ "starknet-ff",
+ "stwo-cairo-serialize-derive 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
  "stwo-prover",
 ]
 
 [[package]]
 name = "stwo-cairo-serialize-derive"
 version = "0.1.0"
-source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm#6aea139caf9956fdac1841efc1289346aeaf0fc0"
+source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
+dependencies = [
+ "quote",
+ "syn 2.0.104",
+]
+
+[[package]]
+name = "stwo-cairo-serialize-derive"
+version = "0.1.0"
+source = "git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
 dependencies = [
  "quote",
  "syn 2.0.104",
@@ -3343,7 +3425,7 @@ name = "stwo-web-stark"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
- "cairo-air",
+ "cairo-air 0.1.1 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
  "cairo-lang-runner",
  "cairo-prove",
  "cairo-vm",
@@ -3356,8 +3438,8 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "serde_json",
- "stwo-cairo-adapter",
- "stwo_cairo_prover",
+ "stwo-cairo-adapter 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
+ "stwo_cairo_prover 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
  "thiserror-no-std",
  "wasm-bindgen",
  "wasm-bindgen-test",
@@ -3367,9 +3449,9 @@ dependencies = [
 [[package]]
 name = "stwo_cairo_prover"
 version = "0.1.0"
-source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm#6aea139caf9956fdac1841efc1289346aeaf0fc0"
+source = "git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
 dependencies = [
- "cairo-air",
+ "cairo-air 0.1.1 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
  "hex",
  "itertools 0.12.1",
  "num-traits",
@@ -3382,9 +3464,34 @@ dependencies = [
  "starknet-types-core",
  "stwo-air-utils",
  "stwo-air-utils-derive",
- "stwo-cairo-adapter",
- "stwo-cairo-common",
- "stwo-cairo-serialize",
+ "stwo-cairo-adapter 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-cairo-common 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-cairo-serialize 0.1.0 (git+https://github.com/clealabs/stwo-cairo?branch=62c3c4a-fix-wasm-cpu)",
+ "stwo-prover",
+ "tracing",
+]
+
+[[package]]
+name = "stwo_cairo_prover"
+version = "0.1.0"
+source = "git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3#d4bb4e3e47f5a4b5be9f779273cb2aeb7f5a2642"
+dependencies = [
+ "cairo-air 0.1.1 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
+ "hex",
+ "itertools 0.12.1",
+ "num-traits",
+ "paste",
+ "rayon",
+ "serde",
+ "serde_json",
+ "starknet-curve 0.5.1",
+ "starknet-ff",
+ "starknet-types-core",
+ "stwo-air-utils",
+ "stwo-air-utils-derive",
+ "stwo-cairo-adapter 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
+ "stwo-cairo-common 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
+ "stwo-cairo-serialize 0.1.0 (git+https://github.com/clealabs/stwo-cairo?rev=d4bb4e3)",
  "stwo-prover",
  "tracing",
 ]
