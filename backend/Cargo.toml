@@ -39,5 +39,9 @@ console_error_panic_hook = { version = "0.1.7", optional = true }
 # Tell `rustc` to optimize for small code size.
 opt-level = 3
 
+[profile.dev]
+opt-level = 1
+incremental = true
+
 [package.metadata.wasm-pack.profile.release]
 #wasm-opt = ['-O0']

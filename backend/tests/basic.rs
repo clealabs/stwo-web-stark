@@ -9,17 +9,17 @@ use stwo_cairo_prover::stwo_prover::core::{
 };
 use stwo_web_stark::{prove, trace_gen, verify};
 
-// #[test]
-// fn test_e2e() {
-//     let executable_json = include_str!("example_executable.json");
-//     let args = vec![Arg::Value(Felt252::from(100))];
-//     let pcs_config = PcsConfig::default();
-//     let prover_input = trace_gen(executable_json, args);
-//     let cairo_proof = prove(prover_input).expect("Failed to prove");
-//     let preprocessed_trace = PreProcessedTraceVariant::CanonicalWithoutPedersen;
-//     let result = verify_cairo::<Blake2sMerkleChannel>(cairo_proof, pcs_config,
-// preprocessed_trace);     assert!(result.is_ok());
-// }
+#[test]
+fn test_e2e() {
+    let executable_json = include_str!("example_executable.json");
+    let args = vec![Arg::Value(Felt252::from(100))];
+    let pcs_config = PcsConfig::default();
+    let prover_input = trace_gen(executable_json, args);
+    let cairo_proof = prove(prover_input).expect("Failed to prove");
+    let preprocessed_trace = PreProcessedTraceVariant::CanonicalWithoutPedersen;
+    let result = verify_cairo::<Blake2sMerkleChannel>(cairo_proof, pcs_config, preprocessed_trace);
+    assert!(result.is_ok());
+}
 
 // #[test]
 // fn prove_example() {
